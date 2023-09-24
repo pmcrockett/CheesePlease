@@ -245,6 +245,8 @@ var g_bestStats = [
 // LOAD OBJECT DEFINITIONS AND MAP
 
 var g_font = loadImage("Fonts/GGBot_Bad_comic")
+setFont(loadImage("Fonts/GGBot_Bad_comic"))
+
 var g_mapFile = open() // Subsequent opens must use openFile() rather than open() to respect g_freezeFile's state
 
 // Arrange model data in a code-readable format
@@ -400,7 +402,7 @@ var g_stageDat = [
 		.camUp = normalize({0.06, 0.76, 0.65}),
 		.endPos = {-25.75, 1.25, -42.375},
 		.catTimer = 35,
-		.catStartPos = {-19.25, 9, -1.25},
+		.catStartPos = {-18.25, 9, -10.25},
 		.catFwd = normalize({-1, 0, 0})
 	],
 	[
@@ -409,14 +411,14 @@ var g_stageDat = [
 		.info = "Where there are cardboard boxes, there's sure to be a cat.",
 		.endInfo = "As everyone knows, green boxes are better for hiding.",
 		.startPos = {-10.75, 1.1, -6.5},
-		.startFwd = normalize({-0.707, 0, -0.707}),
+		.startFwd = normalize({0.707, 0, -0.707}),
 		.camPos = {-1, 8.6, -16.8},
 		.camFwd = normalize({0.03, -0.4, 0.9}),
 		.camUp = normalize({0.013, 0.9, 0.42}),
 		.endPos = {12.75, 6.75, 4.5},
 		.catTimer = 30,
 		.catStartPos = {-10.75, 2, -6.5},
-		.catFwd = normalize({-0.707, 0, -0.707})
+		.catFwd = normalize({0.707, 0, -0.707})
 	],
 	[
 		.name = "Garage 2",
@@ -424,7 +426,7 @@ var g_stageDat = [
 		.info = "Home repairs? In this economy?",
 		.endInfo = "Green boxes: still the best.",
 		.startPos = {-10.75, 1.1, -6.5},
-		.startFwd = normalize({-0.707, 0, -0.707}),
+		.startFwd = normalize({0.707, 0, -0.707}),
 		.camPos = {13.57, 16.1, -20.93},
 		.camFwd = normalize({-0.51, -0.54, 0.66}),
 		.camUp = normalize({-0.33, 0.84, 0.43}),
@@ -494,45 +496,41 @@ var g_mouseAnim = [
 				.pos = {0, 0, 0},
 				.fwd = {0, 0, 1},
 				.up = {0, 1, 0},
-				.scale = {2, 2, 2},
-				.interp = linear
+				.scale = {2, 2, 2}
 			],
 			[
 				.time = 0.35,
 				.pos = {0, 1, 0},
 				.fwd = normalize({0, 0.707, 0.707}),
 				.up = normalize({0, 0.707, -0.707}),
-				.scale = {2, 2, 2},
-				.interp = linear
+				.scale = {2, 2, 2}
 			],
 			[
 				.time = 0.5,
 				.pos = {0, 1.3, 0},
 				.fwd = {0, 0, 1},
 				.up = {0, 1, 0},
-				.scale = {1.6, 1.6, 1.6},
-				.interp = linear
+				.scale = {1.6, 1.6, 1.6}
 			],
 			[
 				.time = 0.65,
 				.pos = {0, 1, 0},
 				.fwd = normalize({0, -0.707, 0.707}),
 				.up = normalize({0, 0.707, 0.707}),
-				.scale = {1.2, 1.2, 1.2},
-				.interp = linear
+				.scale = {1.2, 1.2, 1.2}
 			],
 			[
 				.time = 1,
 				.pos = {0, 0, 0},
 				.fwd = {0, -1, 0},
 				.up = {0, 0, 1},
-				.scale = {0.5, 0.5, 0.5},
-				.interp = linear
+				.scale = {0.5, 0.5, 0.5}
 			]
 		]
 	]
 ]
 
+/* Simple keyframe animation system. */
 function playAnim(_anim, _obj, _startPos, _startFwd, _startUp, _startScale, _endPos, _endFwd, _endUp, _endScale)
 	if _anim.keyIdx < 0 then
 		_anim.keyIdx = 0
@@ -729,6 +727,7 @@ function updateGameCam(_c)
 	setCamera(g_cam.pos, g_cam.dir)
 return void
 
+/* Reset controller neutral position for motion control. */
 function setNeutralOrientation()
 	g_neutral = controls(0).orientation[0]
 	g_totalMotion = {0, 0, 0}
@@ -737,6 +736,7 @@ return void
 	// ----------------------------------------------------------------
 	// ACTORS
 
+/* Generic actor creation. Initializes physics. */
 function createActor(_type, ref _arr, _pos, _fwd, _up, _scale, _mass)
 	colContext con
 	
@@ -774,6 +774,7 @@ function createActor(_type, ref _arr, _pos, _fwd, _up, _scale, _mass)
 		.isFrozen = false, .name = _type ])
 return void
 
+/* Generic actor removal. */
 function removeActor(ref _arr, _idx)
 	if len(_arr) then
 		removeObject(_arr[_idx].colCon.auxCollider)
@@ -783,6 +784,7 @@ function removeActor(ref _arr, _idx)
 	endif
 return void
 
+/* Removes all actors. */
 function clearActors()
 	while len(g_cheese) loop
 		removeActor(g_cheese, 0)
@@ -796,6 +798,8 @@ function clearActors()
 		removeActor(g_mouse, 0)
 	endif
 return void
+
+/* Per-frame updater for actors. */
 function updateAllActors()
 	if len(g_mouse) then
 		if g_mouseAnim.hide.keyIdx < 0 then
@@ -818,6 +822,7 @@ function updateAllActors()
 	endif
 return void
 
+/* Update actor physics. */
 function updateActor(_actor, _timeDelta)
 	_actor.colCon = updateObjCollisions(_actor.collider, _actor.colCon, {0, 0, 0}, 
 		{0, 0, 1}, {0, 1, 0}, _actor.colCon.scale, _actor.colCon.collisionMode, 
@@ -829,6 +834,7 @@ function updateActor(_actor, _timeDelta)
 	setObjRot(_actor.obj.obj, _actor.colCon.comPos - appliedCom, _actor.colCon.fwd, _actor.colCon.up)
 return _actor
 
+/* Moves actor in the direction of a target actor/ */
 function seekTarget(_actor, _target, ref _jumpCooldown, _turnSpd)
 	// Find angle to look at cheese
 	var targetPos = projectVecToPlane(_target.colCon.comPos, _actor.colCon.comPos, {0, 1, 0})
@@ -885,8 +891,14 @@ function seekTarget(_actor, _target, ref _jumpCooldown, _turnSpd)
 			playAudio(g_wallChan, g_wallSnd, g_vol - 1, getPanPos(_actor.colCon.comPos), getRndPitch(0.4, 0.8), 0)
 		endif 
 	endif
+	
+	// Fix an infrequent rotation issue where up axis skews
+	if _actor.colCon.up != {0, 1, 0} then
+		_actor.colCon.up = {0, 1, 0}
+	endif
 return _actor
 
+/* Checks if cheese has collided with something. */
 function checkCheeseCol()
 	if len(g_cheese) then
 		if distance(g_mouse[0].colCon.comPos, g_cheese[0].colCon.comPos) < 1 then
@@ -897,12 +909,14 @@ function checkCheeseCol()
 	endif
 return void
 
+/* Makes end-of-stage arrow bounce. */
 function updateArrow()
 	if len(g_arrow) then
 		setObjectPos(g_arrow[0].grp, g_stageDat[g_curStage].endPos + {0, 2 + sin(time() * 300) / 2, 0})
 	endif
 return void
 
+/* Initializes cat for a stage. */
 function resetCat()
 	if len(g_cat) then
 		removeActor(g_cat, 0)
@@ -914,6 +928,7 @@ return void
 	// ----------------------------------------------------------------
 	// THROWING
 	
+/* Throws cheese based on current throw strength. */
 function throwCheese(_throwType)
 	playAudio(g_throwChan, g_throwSnd, g_vol - 0.7, 0.5, lerp(1.3, 2, g_throwPower), 0)
 	
@@ -930,6 +945,7 @@ function throwCheese(_throwType)
 	g_cheese[len(g_cheese) - 1].colCon.vel += g_cam.fwd * g_throwPower * 35 +  g_cam.up * 25 * g_throwPower
 return void
 
+/* Increases throw strength. */
 function chargeThrow()
 	var c = controls(0)
 	
@@ -1017,6 +1033,7 @@ return void
 	// ----------------------------------------------------------------
 	// STAGE STATE
 
+/* Returns stage index from name.  */
 function getStageIdx(_name)
 	var idx = -1
 	var i
@@ -1028,8 +1045,11 @@ function getStageIdx(_name)
 	repeat
 return idx
 
+/* Resets everything for stage load. */
 function initStage(_stageIdx, _showTitle)
 	if _stageIdx < len(g_stageDat) then
+		/* Stage loads are queued in order to later call the loader from as shallow an execution context as possible.
+		Necessary because the Celqi map loader will hit a recursion limit if called from too deep a context. */
 		if g_currentMapName != g_stageDat[_stageIdx].name then
 			g_needStageLoad = _stageIdx
 		else
@@ -1050,7 +1070,7 @@ function initStage(_stageIdx, _showTitle)
 			g_restartTimer = 0
 			g_firstInputSent = false
 			g_catTimer = g_stageDat[_stageIdx].catTimer
-			createActor("Mouze", g_mouse, g_stageDat[_stageIdx].startPos, g_stageDat[g_curStage].startFwd, {0, 1, 0}, {2, 2, 2}, 20)
+			createActor("Mouze", g_mouse, g_stageDat[_stageIdx].startPos, g_stageDat[_stageIdx].startFwd, {0, 1, 0}, {2, 2, 2}, 20)
 			g_isDead = false
 		endif
 		
@@ -1060,6 +1080,7 @@ function initStage(_stageIdx, _showTitle)
 	endif
 return void
 	
+/* Checks if the restart button has been held long enough to restart. */
 function checkRestart()
 	var c = controls(0)
 	var needQuit = false
@@ -1082,6 +1103,7 @@ function checkRestart()
 	endif
 return needQuit
 
+/* Checks if actors have fallen off the stage. */
 function checkFall()
 	var needQuit = false
 	if len(g_cat) then
@@ -1121,6 +1143,7 @@ function checkFall()
 	repeat
 return needQuit	
 
+/* Spawns cat if timer has run out. */
 function updateCatTimer()
 	if g_firstInputSent then
 		if g_catTimer > 0 then
@@ -1136,6 +1159,7 @@ function updateCatTimer()
 	endif
 return void
 
+/* Checks if an end condition has been reached. */
 function checkStageEnd()
 	var needQuit = false
 	var ended = false
@@ -1177,6 +1201,7 @@ return needQuit
 	// ----------------------------------------------------------------
 	// UI
 
+/* Draws in-game UI (throw meter and cat timer). */
 function drawGameUi()
 	drawThrowMeter(g_throwPower)
 	
@@ -1226,6 +1251,7 @@ return void
 	// ----------------------------------------------------------------
 	// AUDIO
 
+/* Sometimes we play a different fall sound just for fun. */
 function getRndFallSnd()
 	var rand = rnd(12)
 	var snd
@@ -1238,6 +1264,7 @@ function getRndFallSnd()
 	endif
 return snd
 
+/* The cat jump randomly picks between two sounds. */
 function getCatSndRr()
 return getRr(g_cat1Snd, g_cat2Snd)
 
@@ -1251,10 +1278,12 @@ function getRr(_rr1, _rr2)
 	endif
 return snd
 
+/* Random sound pitch. */
 function getRndPitch(_lower, _upper)
 	var pitch = rnd(_upper - _lower) + _lower
 return pitch
 
+/* Returns pan position based on screen position, */
 function getPanPos(_worldPos)
 	var panPos = worldPosToScreenPos(_worldPos, g_cam.fwd, g_cam.up, 
 		g_cam.pos, g_cam.fov).x / gwidth()
@@ -1263,8 +1292,8 @@ return panPos
 	// ----------------------------------------------------------------
 	// MENUS
 
+/* Stage title card. */
 function showStageTitle(_stageIdx)
-	setFont(g_font)
 	var timer = time()
 	
 	var c = controls(0)
@@ -1287,9 +1316,8 @@ function showStageTitle(_stageIdx)
 	g_cDat[g_cIdx.a].held = true
 return void
 
+/* Title screen. */
 function showGameTitle(_playSnd)
-	setFont(g_font)
-	
 	resetStats()
 	
 	var sel = 0
@@ -1362,6 +1390,7 @@ function showGameTitle(_playSnd)
 	g_cDat[g_cIdx.a].held = true
 return sel
 
+/* Returns text size of a menu item based on whether it's selected. */
 function getSelSize(_idx, _sel)
 	var size = 0.25
 	
@@ -1370,6 +1399,7 @@ function getSelSize(_idx, _sel)
 	endif
 return size
 
+/* Returns color of a menu item based on whether it's selected. */
 function getSelCol(_idx, _sel)
 	var col = white
 	
@@ -1378,15 +1408,15 @@ function getSelCol(_idx, _sel)
 	endif
 return col
 
+/* Puts brackets around a selected ssetting. */
 function getSelBrackets(_str, _idx, _sel)
 	if _sel == _idx then
 		_str = "< " + _str + " >"
 	endif
 return _str
 
+/* Settings menu. */
 function showSettings(_selStart)
-	setFont(g_font)
-	
 	var sel = _selStart
 	var rPos = gwidth() * 0.85
 	var needSettingsTest = false
@@ -1455,7 +1485,6 @@ function showSettings(_selStart)
 		drawTextEx("Done",
 			{ gwidth() * 0.1, baseH + spacer * 13 }, 
 			getSelSize(11, sel), align_center_left, gwidth() * 0.75, 0, {1, 1}, getSelCol(11, sel))
-		
 		
 		drawTextEx(getSelBrackets(getBoolStr(settingsArr[0]), 0, sel),
 			{ rPos, baseH }, 
@@ -1557,6 +1586,7 @@ function showSettings(_selStart)
 	endif
 return needSettingsTest
 
+/* Launch stage 1 map to test settings. */
 function runSettingsTest()
 	var c = controls(0)
 	
@@ -1584,8 +1614,8 @@ function runSettingsTest()
 	g_cDat[g_cIdx.a].held = true
 return void
 
+/* Story screen. */
 function showWhat()
-	setFont(g_font)
 	var timer = time()
 	
 	var c = controls(0)
@@ -1610,8 +1640,8 @@ function showWhat()
 	g_cDat[g_cIdx.a].held = true
 return void
 
+/* Instructions screen. */
 function showHow()
-	setFont(g_font)
 	var timer = time()
 	
 	var c = controls(0)
@@ -1642,10 +1672,10 @@ function showHow()
 	g_cDat[g_cIdx.a].held = true
 return void
 
+/* Stage end card. */
 function showStageEnd(_stageIdx)
 	stopChannel(g_throwChan)
 	playAudio(g_menuChan, g_winSnd, g_vol - 0.5, 0.5, getRndPitch(0.8, 1.2), 0)
-	setFont(g_font)
 	var timer = time()
 	g_cDat[g_cIdx.a].held = true
 	
@@ -1669,6 +1699,7 @@ function showStageEnd(_stageIdx)
 	g_cDat[g_cIdx.a].held = true
 return void
 
+/* Game stats screen. */
 function showStats()
 	g_stats.throwsEatenPct = (g_stats.throwsEaten / (g_stats.throwsGreen + g_stats.throwsYellow)) * 100
 	g_stats.deathsTotal = g_stats.deathsReset + g_stats.deathsFall + g_stats.deathsCat
@@ -1757,8 +1788,6 @@ function showStats()
 		endif
 	endif
 	
-	
-	setFont(g_font)
 	var timer = time()
 	g_cDat[g_cIdx.a].held = true
 	
@@ -1782,6 +1811,7 @@ function showStats()
 	g_cDat[g_cIdx.a].held = true	
 return void
 
+/* Best game stats screen. */
 function showBestStats()
 	var newBest = [
 		false, false, false, false, false, false, false, false, false, false, false
@@ -1789,7 +1819,6 @@ function showBestStats()
 	var reset = false
 	var sel = 0
 	
-	setFont(g_font)
 	var timer = time()
 	g_cDat[g_cIdx.a].held = true
 	
@@ -1814,7 +1843,6 @@ function showBestStats()
 			getSelSize(1, sel), align_center, gwidth(), 0, {1, 1}, getSelCol(1, sel))
 		
 		update()
-		
 		
 		if menuDirInputStarted(c, false) then
 			var snd = false
@@ -1846,6 +1874,7 @@ function showBestStats()
 	g_cDat[g_cIdx.a].held = true	
 return void
 
+/* Asks for confirmation of stats reset. */
 function showResetBestStatsPrompt()
 	var sel = 0
 	var reset = false
@@ -1921,6 +1950,7 @@ function showResetBestStatsPrompt()
 	g_cDat[g_cIdx.a].held = true		
 return reset
 
+/* Prints stats table. */
 function printStats(_stats, _newBest, _showingBest)
 	var sec = mod(_stats.totalTime, 60)
 	var secStr = floatToStr(sec, 2)
@@ -1990,6 +2020,7 @@ function printStats(_stats, _newBest, _showingBest)
 		0.25, align_center_right, gwidth() * 0.75, 0, {1, 1}, white)
 return void
 
+/* Initializes stats. */
 function resetStats()
 	g_stats = [
 		.deathsFall = 0,
@@ -2007,6 +2038,7 @@ function resetStats()
 	]
 return void
 
+/* Flags new best stats at end of game stats screen. */
 function getNewBestStr(_arr, _idx)
 	var bestStr = ""
 	
@@ -2015,6 +2047,7 @@ function getNewBestStr(_arr, _idx)
 	endif
 return  bestStr
 
+/* Game over screen. */
 function showGameOver()
 	var quit = false
 	var timer = time()
@@ -2029,7 +2062,6 @@ function showGameOver()
 	clearActors()
 	playAudio(g_menuChan, g_failSnd, g_vol - 0.5, 0.5, getRndPitch(0.8, 1.2), 0)
 	
-	setFont(g_font)
 	var text = getGameOverText()
 	
 	var c = controls(0)
@@ -2066,6 +2098,7 @@ function showGameOver()
 	endif
 return quit
 
+/* Random game over string. */
 function getGameOverText()
 	var text = [
 		"Oops!",
@@ -2086,6 +2119,7 @@ function getGameOverText()
 	]
 return text[rnd(len(text))]
 
+/* Splash screen for game image. Not normally shown in the game but can be viewed by uncommenting the function call. */
 function showSplash()
 	clearMap()
 	var mapFile = openFile()
@@ -2109,12 +2143,237 @@ function showSplash()
 	repeat
 return void
 
+	// ----------------------------------------------------------------
+	// FILE READ
+
+function readGameSettings(_file)
+	var sectionIdx = findFileSection(_file, "gameSettings")
+	var chunk = getNextFileChunk(_file, sectionIdx.start) // Section
+	var field
+	
+	while inFileSection(chunk) loop
+		chunk = getNextFileChunk(_file, chunk.nextIdx) // Block
+		while inFileBlock(chunk) loop
+			chunk = getNextFileChunk(_file, chunk.nextIdx) // Unit
+			while inFileUnit(chunk) loop
+				chunk = getNextFileChunk(_file, chunk.nextIdx) // Field
+				field = chunk.dat
+				
+				array elem[0]
+				while inFileField(chunk) loop
+					chunk = getNextFileChunk(_file, chunk.nextIdx) // Elem
+					elem = push(elem, chunk.dat)
+				repeat
+				
+				loop if field == ".useMot" then
+					g_settings.useMot = decodeElem(elem)
+					break endif
+				if field == ".motXSens" then
+					g_settings.motXSens = decodeElem(elem)
+					break endif
+				if field == ".motYSens" then
+					g_settings.motYSens = decodeElem(elem)
+					break endif
+				if field == ".useMotPan" then
+					g_settings.useMotPan = decodeElem(elem)
+					break endif
+				if field == ".invMotX" then
+					g_settings.invMotX = decodeElem(elem)
+					break endif
+				if field == ".invMotY" then
+					g_settings.invMotY = decodeElem(elem)
+					break endif
+				if field == ".stickXSens" then
+					g_settings.stickXSens = decodeElem(elem)
+					break endif
+				if field == ".stickYSens" then
+					g_settings.stickYSens = decodeElem(elem)
+					break endif
+				if field == ".invStickX" then
+					g_settings.invStickX = decodeElem(elem)
+					break endif
+				if field == ".invStickY" then
+					g_settings.invStickY = decodeElem(elem)
+					break
+				endif break repeat
+			repeat
+		repeat
+	repeat
+return void
+
+function readBestStats(_file)
+	var sectionIdx = findFileSection(_file, "bestStats")
+	var chunk = getNextFileChunk(_file, sectionIdx.start) // Section
+	var field
+	
+	while inFileSection(chunk) loop
+		chunk = getNextFileChunk(_file, chunk.nextIdx) // Block
+		while inFileBlock(chunk) loop
+			chunk = getNextFileChunk(_file, chunk.nextIdx) // Unit
+			while inFileUnit(chunk) loop
+				chunk = getNextFileChunk(_file, chunk.nextIdx) // Field
+				field = chunk.dat
+				
+				array elem[0]
+				while inFileField(chunk) loop
+					chunk = getNextFileChunk(_file, chunk.nextIdx) // Elem
+					elem = push(elem, chunk.dat)
+				repeat
+				
+				loop if field == ".deathsFall" then
+					g_bestStats.deathsFall = decodeElem(elem)
+					break endif
+				if field == ".deathsCat" then
+					g_bestStats.deathsCat = decodeElem(elem)
+					break endif
+				if field == ".deathsReset" then
+					g_bestStats.deathsReset = decodeElem(elem)
+					break endif
+				if field == ".deathsTotal" then
+					g_bestStats.deathsTotal = decodeElem(elem)
+					break endif
+				if field == ".catsSeen" then
+					g_bestStats.catsSeen = decodeElem(elem)
+					break endif
+				if field == ".throwsYellow" then
+					g_bestStats.throwsYellow = decodeElem(elem)
+					break endif
+				if field == ".throwsGreen" then
+					g_bestStats.throwsGreen = decodeElem(elem)
+					break endif
+				if field == ".throwsTotal" then
+					g_bestStats.throwsTotal = decodeElem(elem)
+					break endif
+				if field == ".throwsFall" then
+					g_bestStats.throwsFall = decodeElem(elem)
+					break endif
+				if field == ".throwsEatenPct" then
+					g_bestStats.throwsEatenPct = decodeElem(elem)
+					break endif
+				if field == ".totalTime" then
+					g_bestStats.totalTime = decodeElem(elem)
+					break
+				endif break repeat
+			repeat
+		repeat
+	repeat
+return void
+
+	// ----------------------------------------------------------------
+	// FILE WRITE
+
+function writeGameSettings()
+return writeGameSettings(-1, true)
+
+function writeGameSettings(_file)
+return writeGameSettings(_file, false)
+
+function writeGameSettings(_file, _needFileOpen)
+	_file = openFileIfNeeded(_file, _needFileOpen)
+	
+	var sectionIdx = findFileSection(_file, "gameSettings")
+	if sectionIdx.start < 0 then
+		sectionIdx.start = getEofIdx(_file)
+		sectionIdx.end = sectionIdx.start
+	endif
+	
+	var writeStr = sectionStr("gameSettings" + versionStr())
+	writeStr += blockStr("")
+	writeStr += unitStr("")
+	writeStr += fieldStr(".useMot")
+	writeStr += elemStr(g_settings.useMot)
+	writeStr += fieldStr(".motXSens")
+	writeStr += elemStr(g_settings.motXSens)
+	writeStr += fieldStr(".motYSens")
+	writeStr += elemStr(g_settings.motYSens)
+	writeStr += fieldStr(".useMotPan")
+	writeStr += elemStr(g_settings.useMotPan)
+	writeStr += fieldStr(".invMotX")
+	writeStr += elemStr(g_settings.invMotX)
+	writeStr += fieldStr(".invMotY")
+	writeStr += elemStr(g_settings.invMotY)
+	writeStr += fieldStr(".stickXSens")
+	writeStr += elemStr(g_settings.stickXSens)
+	writeStr += fieldStr(".stickYSens")
+	writeStr += elemStr(g_settings.stickYSens)
+	writeStr += fieldStr(".invStickX")
+	writeStr += elemStr(g_settings.invStickX)
+	writeStr += fieldStr(".invStickY")
+	writeStr += elemStr(g_settings.invStickY)
+	writeFileSegment(_file, writeStr, sectionIdx.start, sectionIdx.end)
+	
+	closeFileIfNeeded(_file, _needFileOpen)
+return void
+
+function writeBestStats()
+return writeBestStats(-1, true)
+
+function writeBestStats(_file)
+return writeBestStats(_file, false)
+
+function writeBestStats(_file, _needFileOpen)
+	_file = openFileIfNeeded(_file, _needFileOpen)
+	
+	var sectionIdx = findFileSection(_file, "bestStats")
+	if sectionIdx.start < 0 then
+		sectionIdx.start = getEofIdx(_file)
+		sectionIdx.end = sectionIdx.start
+	endif
+	
+	var writeStr = sectionStr("bestStats" + versionStr())
+	writeStr += blockStr("")
+	writeStr += unitStr("")
+	writeStr += fieldStr(".deathsFall")
+	writeStr += elemStr(g_bestStats.deathsFall)
+	writeStr += fieldStr(".deathsCat")
+	writeStr += elemStr(g_bestStats.deathsCat)
+	writeStr += fieldStr(".deathsReset")
+	writeStr += elemStr(g_bestStats.deathsReset)
+	writeStr += fieldStr(".deathsTotal")
+	writeStr += elemStr(g_bestStats.deathsTotal)
+	writeStr += fieldStr(".catsSeen")
+	writeStr += elemStr(g_bestStats.catsSeen)
+	writeStr += fieldStr(".throwsYellow")
+	writeStr += elemStr(g_bestStats.throwsYellow)
+	writeStr += fieldStr(".throwsGreen")
+	writeStr += elemStr(g_bestStats.throwsGreen)
+	writeStr += fieldStr(".throwsTotal")
+	writeStr += elemStr(g_bestStats.throwsTotal)
+	writeStr += fieldStr(".throwsFall")
+	writeStr += elemStr(g_bestStats.throwsFall)
+	writeStr += fieldStr(".throwsEatenPct")
+	writeStr += elemStr(g_bestStats.throwsEatenPct)
+	writeStr += fieldStr(".totalTime")
+	writeStr += elemStr(g_bestStats.totalTime)
+	writeFileSegment(_file, writeStr, sectionIdx.start, sectionIdx.end)
+	
+	closeFileIfNeeded(_file, _needFileOpen)
+return void
+
+function deleteBestStats()
+return deleteBestStats(-1, true)
+
+function deleteBestStats(_file)
+return deleteBestStats(_file, false)
+
+function deleteBestStats(_file, _needFileOpen)
+	_file = openFileIfNeeded(_file, _needFileOpen)
+	
+	var sectionIdx = findFileSection(_file, "bestStats")
+	
+	if sectionIdx.start >= 0 then
+		writeFileSegment(_file, "", sectionIdx.start, sectionIdx.end)
+	endif
+	
+	closeFileIfNeeded(_file, _needFileOpen)
+return void
+
 // ----------------------------------------------------------------
 // MAIN EXECUTION LOOP
 
 loop
 	loop if g_needStageLoad != -1 then
-		//g_needStageLoad = 1 // DEBUG
+		//g_needStageLoad = 5 // DEBUG: Forces loading of a specific stage
 		clearMap()
 		var mapFile = openFile()
 		g_currentMapName = g_stageDat[g_needStageLoad].name
@@ -2211,7 +2470,6 @@ repeat
 
 /* Stores information about an object's collision state. */
 // CORE LOADER
-
 struct colContext
 	int cell = -1
 	vector cellPos = {float_max, float_max, float_max}
@@ -2432,112 +2690,6 @@ function writeFileSegment(_file, _fileStr, _start, _end)
 	closeFileEndBuffer(_file, endBuf, _start + len(_fileStr))
 return void
 
-function writeGameSettings()
-return writeGameSettings(-1, true)
-
-function writeGameSettings(_file)
-return writeGameSettings(_file, false)
-
-function writeGameSettings(_file, _needFileOpen)
-	_file = openFileIfNeeded(_file, _needFileOpen)
-	
-	var sectionIdx = findFileSection(_file, "gameSettings")
-	if sectionIdx.start < 0 then
-		sectionIdx.start = getEofIdx(_file)
-		sectionIdx.end = sectionIdx.start
-	endif
-	
-	var writeStr = sectionStr("gameSettings" + versionStr())
-	writeStr += blockStr("")
-	writeStr += unitStr("")
-	writeStr += fieldStr(".useMot")
-	writeStr += elemStr(g_settings.useMot)
-	writeStr += fieldStr(".motXSens")
-	writeStr += elemStr(g_settings.motXSens)
-	writeStr += fieldStr(".motYSens")
-	writeStr += elemStr(g_settings.motYSens)
-	writeStr += fieldStr(".useMotPan")
-	writeStr += elemStr(g_settings.useMotPan)
-	writeStr += fieldStr(".invMotX")
-	writeStr += elemStr(g_settings.invMotX)
-	writeStr += fieldStr(".invMotY")
-	writeStr += elemStr(g_settings.invMotY)
-	writeStr += fieldStr(".stickXSens")
-	writeStr += elemStr(g_settings.stickXSens)
-	writeStr += fieldStr(".stickYSens")
-	writeStr += elemStr(g_settings.stickYSens)
-	writeStr += fieldStr(".invStickX")
-	writeStr += elemStr(g_settings.invStickX)
-	writeStr += fieldStr(".invStickY")
-	writeStr += elemStr(g_settings.invStickY)
-	writeFileSegment(_file, writeStr, sectionIdx.start, sectionIdx.end)
-	
-	closeFileIfNeeded(_file, _needFileOpen)
-return void
-
-function writeBestStats()
-return writeBestStats(-1, true)
-
-function writeBestStats(_file)
-return writeBestStats(_file, false)
-
-function writeBestStats(_file, _needFileOpen)
-	_file = openFileIfNeeded(_file, _needFileOpen)
-	
-	var sectionIdx = findFileSection(_file, "bestStats")
-	if sectionIdx.start < 0 then
-		sectionIdx.start = getEofIdx(_file)
-		sectionIdx.end = sectionIdx.start
-	endif
-	
-	var writeStr = sectionStr("bestStats" + versionStr())
-	writeStr += blockStr("")
-	writeStr += unitStr("")
-	writeStr += fieldStr(".deathsFall")
-	writeStr += elemStr(g_bestStats.deathsFall)
-	writeStr += fieldStr(".deathsCat")
-	writeStr += elemStr(g_bestStats.deathsCat)
-	writeStr += fieldStr(".deathsReset")
-	writeStr += elemStr(g_bestStats.deathsReset)
-	writeStr += fieldStr(".deathsTotal")
-	writeStr += elemStr(g_bestStats.deathsTotal)
-	writeStr += fieldStr(".catsSeen")
-	writeStr += elemStr(g_bestStats.catsSeen)
-	writeStr += fieldStr(".throwsYellow")
-	writeStr += elemStr(g_bestStats.throwsYellow)
-	writeStr += fieldStr(".throwsGreen")
-	writeStr += elemStr(g_bestStats.throwsGreen)
-	writeStr += fieldStr(".throwsTotal")
-	writeStr += elemStr(g_bestStats.throwsTotal)
-	writeStr += fieldStr(".throwsFall")
-	writeStr += elemStr(g_bestStats.throwsFall)
-	writeStr += fieldStr(".throwsEatenPct")
-	writeStr += elemStr(g_bestStats.throwsEatenPct)
-	writeStr += fieldStr(".totalTime")
-	writeStr += elemStr(g_bestStats.totalTime)
-	writeFileSegment(_file, writeStr, sectionIdx.start, sectionIdx.end)
-	
-	closeFileIfNeeded(_file, _needFileOpen)
-return void
-
-function deleteBestStats()
-return deleteBestStats(-1, true)
-
-function deleteBestStats(_file)
-return deleteBestStats(_file, false)
-
-function deleteBestStats(_file, _needFileOpen)
-	_file = openFileIfNeeded(_file, _needFileOpen)
-	
-	var sectionIdx = findFileSection(_file, "bestStats")
-	
-	if sectionIdx.start >= 0 then
-		writeFileSegment(_file, "", sectionIdx.start, sectionIdx.end)
-	endif
-	
-	closeFileIfNeeded(_file, _needFileOpen)
-return void
-
 	// ----------------------------------------------------------------
 	// FILE READING
 
@@ -2627,7 +2779,6 @@ element that is currently loading. */
 // CORE LOADER
 function loadMapMsg(_mapName, _objName, _objPos)	
 	clear()
-	setFont(g_font)
 	drawTextEx("Summoning rodents ...", { gwidth() / 2, gheight() / 2 }, 
 		0.25, align_center, gwidth(), 0, {1, 1}, white)
 	update()
@@ -3214,7 +3365,6 @@ object defintion that is currently loading. */
 // CORE LOADER
 function loadDefMsg(_defName)
 	clear()
-	setFont(g_font)
 	drawTextEx("Loading cheeses ...", { gwidth() / 2, gheight() / 2 }, 
 		0.25, align_center, gwidth(), 0, {1, 1}, white)
 	update()
@@ -3366,7 +3516,7 @@ return result
 fills the top-level container. */
 // CORE LOADER
 function assembleMergedObjDefChild(_file, _chunk, _def, _curChildIdx)
-	_chuNk = getNextFileChunk(_file, _chunk.nextIdx) // Unit
+	_chunk = getNextFileChunk(_file, _chunk.nextIdx) // Unit
 	var genResult = getGenObjFromFile(_file, _chunk)
 	var genObj = genResult.obj
 	_chunk = genResult.chunk
@@ -3432,119 +3582,6 @@ function loadAssembledMergedObjDef(_def, _savedBankName)
 	
 	result = [ .bank = defBank, .idx = defIdx ]
 return result
-
-function readGameSettings(_file)
-	var sectionIdx = findFileSection(_file, "gameSettings")
-	var chunk = getNextFileChunk(_file, sectionIdx.start) // Section
-	var field
-	
-	while inFileSection(chunk) loop
-		chunk = getNextFileChunk(_file, chunk.nextIdx) // Block
-		while inFileBlock(chunk) loop
-			chunk = getNextFileChunk(_file, chunk.nextIdx) // Unit
-			while inFileUnit(chunk) loop
-				chunk = getNextFileChunk(_file, chunk.nextIdx) // Field
-				field = chunk.dat
-				
-				array elem[0]
-				while inFileField(chunk) loop
-					chunk = getNextFileChunk(_file, chunk.nextIdx) // Elem
-					elem = push(elem, chunk.dat)
-				repeat
-				
-				loop if field == ".useMot" then
-					g_settings.useMot = decodeElem(elem)
-					break endif
-				if field == ".motXSens" then
-					g_settings.motXSens = decodeElem(elem)
-					break endif
-				if field == ".motYSens" then
-					g_settings.motYSens = decodeElem(elem)
-					break endif
-				if field == ".useMotPan" then
-					g_settings.useMotPan = decodeElem(elem)
-					break endif
-				if field == ".invMotX" then
-					g_settings.invMotX = decodeElem(elem)
-					break endif
-				if field == ".invMotY" then
-					g_settings.invMotY = decodeElem(elem)
-					break endif
-				if field == ".stickXSens" then
-					g_settings.stickXSens = decodeElem(elem)
-					break endif
-				if field == ".stickYSens" then
-					g_settings.stickYSens = decodeElem(elem)
-					break endif
-				if field == ".invStickX" then
-					g_settings.invStickX = decodeElem(elem)
-					break endif
-				if field == ".invStickY" then
-					g_settings.invStickY = decodeElem(elem)
-					break
-				endif break repeat
-			repeat
-		repeat
-	repeat
-return void
-
-function readBestStats(_file)
-	var sectionIdx = findFileSection(_file, "bestStats")
-	var chunk = getNextFileChunk(_file, sectionIdx.start) // Section
-	var field
-	
-	while inFileSection(chunk) loop
-		chunk = getNextFileChunk(_file, chunk.nextIdx) // Block
-		while inFileBlock(chunk) loop
-			chunk = getNextFileChunk(_file, chunk.nextIdx) // Unit
-			while inFileUnit(chunk) loop
-				chunk = getNextFileChunk(_file, chunk.nextIdx) // Field
-				field = chunk.dat
-				
-				array elem[0]
-				while inFileField(chunk) loop
-					chunk = getNextFileChunk(_file, chunk.nextIdx) // Elem
-					elem = push(elem, chunk.dat)
-				repeat
-				
-				loop if field == ".deathsFall" then
-					g_bestStats.deathsFall = decodeElem(elem)
-					break endif
-				if field == ".deathsCat" then
-					g_bestStats.deathsCat = decodeElem(elem)
-					break endif
-				if field == ".deathsReset" then
-					g_bestStats.deathsReset = decodeElem(elem)
-					break endif
-				if field == ".deathsTotal" then
-					g_bestStats.deathsTotal = decodeElem(elem)
-					break endif
-				if field == ".catsSeen" then
-					g_bestStats.catsSeen = decodeElem(elem)
-					break endif
-				if field == ".throwsYellow" then
-					g_bestStats.throwsYellow = decodeElem(elem)
-					break endif
-				if field == ".throwsGreen" then
-					g_bestStats.throwsGreen = decodeElem(elem)
-					break endif
-				if field == ".throwsTotal" then
-					g_bestStats.throwsTotal = decodeElem(elem)
-					break endif
-				if field == ".throwsFall" then
-					g_bestStats.throwsFall = decodeElem(elem)
-					break endif
-				if field == ".throwsEatenPct" then
-					g_bestStats.throwsEatenPct = decodeElem(elem)
-					break endif
-				if field == ".totalTime" then
-					g_bestStats.totalTime = decodeElem(elem)
-					break
-				endif break repeat
-			repeat
-		repeat
-	repeat
-return void
 
 	// ----------------------------------------------------------------
 	// FILE ENCODING
