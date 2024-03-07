@@ -1,6 +1,6 @@
 # Cheese, Please
 
-[![Cheese, Please YouTube link](Cheese, Please, YouTube Thumbnail.gif)](https://www.youtube.com/watch?v=4BfnaAR9cew "Cheese, Please YouTube link")
+[![Cheese, Please YouTube link](Cheese%2C%20Please%20YouTube%20Thumbnail.gif)](https://www.youtube.com/watch?v=4BfnaAR9cew "Cheese, Please YouTube link")
 
 [On YouTube](https://www.youtube.com/watch?v=4BfnaAR9cew)
 
@@ -37,4 +37,4 @@ NH4GDMNDDT (1.0)
 * Improved lighting.
 * Lowered FOV.
 * Mouse faces correct direction at stage start.
-* Codebase organization/clean-up
+* Codebase organization/clean-up.
