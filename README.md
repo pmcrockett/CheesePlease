@@ -6,7 +6,7 @@
 
 ### About
 
-Cheese, Please was created for FUZE Gamejam 26 (theme: HIDE). It is a 3D, physics-based game about throwing cheese, concealing mice, and dodging cats.
+Cheese, Please was created for FUZE Gamejam 26 (theme: HIDE). It is a 3D, physics-based game about throwing cheese, concealing mice, and dodging cats. Levels were created with [Celqi](https://github.com/pmcrockett/Celqi).
 
 Version 1.1 adds saved gameplay stats and motion controls for aiming.
 
